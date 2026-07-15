@@ -5,6 +5,7 @@ import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import 'HomeView.dart';
 import 'BookDetailsView.dart';
+import 'OrderSuccessView.dart';
 
 class MainDashboardView extends StatefulWidget {
   final String userName;
@@ -380,10 +381,21 @@ class CartTab extends StatelessWidget {
                                   ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(dialogCtx).pop(),
+                                      onPressed: () {
+                                        Navigator.of(
+                                          dialogCtx,
+                                        ).pop(); // يقفل الرسالة
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const OrderSuccessView(),
+                                          ),
+                                        );
+                                      },
                                       child: const Text(
-                                        'Ok',
+                                        'OK',
                                         style: TextStyle(
                                           color: Color(0xFFC3A15C),
                                         ),
