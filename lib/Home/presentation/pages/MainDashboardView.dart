@@ -27,7 +27,6 @@ class _MainDashboardViewState extends State<MainDashboardView> {
   @override
   void initState() {
     super.initState();
-    // Load books data when home is mounted
     context.read<HomeCubit>().loadHomeData();
   }
 
@@ -83,7 +82,8 @@ class _MainDashboardViewState extends State<MainDashboardView> {
   }
 }
 
-// Bookmarks Tab Content
+// ================= Bookmarks Tab =================
+
 class BookmarksTab extends StatelessWidget {
   const BookmarksTab({super.key});
 
@@ -145,6 +145,7 @@ class BookmarksTab extends StatelessWidget {
               itemCount: bookmarkedBooks.length,
               itemBuilder: (context, index) {
                 final book = bookmarkedBooks[index];
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   color: Colors.white,
@@ -162,6 +163,18 @@ class BookmarksTab extends StatelessWidget {
                         width: 50,
                         height: 70,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 50,
+                            height: 70,
+                            color: const Color(0xFFE8ECF4),
+                            child: const Icon(
+                              Icons.broken_image_outlined,
+                              color: Color(0xFF8391A1),
+                              size: 28,
+                            ),
+                          );
+                        },
                       ),
                     ),
                     title: Text(
@@ -182,27 +195,14 @@ class BookmarksTab extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          book.price,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Color(0xFF1E232C),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.bookmark_remove,
-                            color: Colors.redAccent,
-                          ),
-                          onPressed: () {
-                            context.read<HomeCubit>().toggleBookmark(book.id);
-                          },
-                        ),
-                      ],
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.bookmark_remove,
+                        color: Colors.redAccent,
+                      ),
+                      onPressed: () {
+                        context.read<HomeCubit>().toggleBookmark(book.id);
+                      },
                     ),
                     onTap: () {
                       Navigator.push(
@@ -220,6 +220,7 @@ class BookmarksTab extends StatelessWidget {
               },
             );
           }
+
           return const Center(
             child: CircularProgressIndicator(color: Color(0xFFC3A15C)),
           );
@@ -228,14 +229,16 @@ class BookmarksTab extends StatelessWidget {
     );
   }
 }
+// ================= Cart Tab =================
 
-// Cart Tab Content
 class CartTab extends StatelessWidget {
   final String userName;
+
   const CartTab({super.key, required this.userName});
 
   void _showCheckoutBottomSheet(BuildContext context) {
     final formKey = GlobalKey<FormState>();
+
     final nameController = TextEditingController(text: userName);
     final phoneController = TextEditingController();
     final emailController = TextEditingController();
@@ -260,8 +263,8 @@ class CartTab extends StatelessWidget {
             key: formKey,
             child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Checkout Delivery Details 📦',
@@ -272,53 +275,65 @@ class CartTab extends StatelessWidget {
                       color: Color(0xFF1E232C),
                     ),
                   ),
+
                   const SizedBox(height: 15),
+
                   TextFormField(
                     controller: nameController,
                     decoration: const InputDecoration(
                       labelText: 'Recipient Name',
-                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
                     ),
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Required' : null,
                   ),
+
                   const SizedBox(height: 12),
+
                   TextFormField(
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
                       labelText: 'Recipient Phone',
-                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
                     ),
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Required' : null,
                   ),
+
                   const SizedBox(height: 12),
+
                   TextFormField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Recipient Email',
-                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Required';
-                      if (!v.contains('@')) return 'Invalid email';
+                      if (v == null || v.isEmpty) {
+                        return 'Required';
+                      }
+
+                      if (!v.contains('@')) {
+                        return 'Invalid email';
+                      }
+
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 12),
+
                   TextFormField(
                     controller: addressController,
                     maxLines: 2,
                     decoration: const InputDecoration(
                       labelText: 'Delivery Address',
-                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
                     ),
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Required' : null,
                   ),
+
                   const SizedBox(height: 24),
+
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -331,7 +346,7 @@ class CartTab extends StatelessWidget {
                       ),
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          Navigator.of(bottomSheetContext).pop();
+                          Navigator.pop(bottomSheetContext);
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Placing order... ⏳')),
@@ -348,72 +363,20 @@ class CartTab extends StatelessWidget {
                                 );
 
                             if (context.mounted) {
-                              showDialog(
-                                context: context,
-                                builder: (dialogCtx) => AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  title: const Text(
-                                    'Order Placed Successfully! 🎉',
-                                    style: TextStyle(fontFamily: 'Georgia'),
-                                  ),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Order Number: ${orderDetails['order_number']}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Total Price: ${orderDetails['total_price']} \$',
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        'Thank you for shopping with Bookia. Your order is on its way! 🚀',
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(
-                                          dialogCtx,
-                                        ).pop(); // يقفل الرسالة
-
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                const OrderSuccessView(),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        'OK',
-                                        style: TextStyle(
-                                          color: Color(0xFFC3A15C),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const OrderSuccessView(),
                                 ),
                               );
                             }
                           } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to place order: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           }
                         }
                       },
@@ -440,6 +403,7 @@ class CartTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8F9),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFFF7F8F9),
         elevation: 0,
@@ -452,6 +416,7 @@ class CartTab extends StatelessWidget {
           ),
         ),
       ),
+
       body: BlocBuilder<HomeCubit, HomeStates>(
         builder: (context, state) {
           if (state is HomeSuccessState) {
@@ -461,225 +426,62 @@ class CartTab extends StatelessWidget {
 
             if (cartBooks.isEmpty) {
               return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 80,
-                      color: Color(0xFF8391A1),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Your Cart is Empty',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E232C),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Browse best sellers and add books to your cart.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ],
+                child: Text(
+                  'Your Cart is Empty',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               );
             }
 
-            // Calculate total price (parsing numeric part of price string like "153 $ " or "₹285")
-            double total = 0.0;
-            for (var book in cartBooks) {
-              final numericString = book.price.replaceAll(
-                RegExp(r'[^0-9.]'),
-                '',
-              );
-              final price = double.tryParse(numericString) ?? 0.0;
-              final qty = state.cartBookQuantities[book.id] ?? 1;
-              total += price * qty;
-            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
 
-            // Format total nicely
-            final currencySymbol = cartBooks.first.price.contains('₹')
-                ? '₹'
-                : '\$';
-            final formattedTotal = "$currencySymbol${total.toStringAsFixed(2)}";
+              itemCount: cartBooks.length,
 
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: cartBooks.length,
-                    itemBuilder: (context, index) {
-                      final book = cartBooks[index];
-                      final qty = state.cartBookQuantities[book.id] ?? 1;
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        color: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFE8ECF4)),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12),
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              book.imageUrl,
-                              width: 50,
-                              height: 70,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          title: Text(
-                            book.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Georgia',
-                              fontSize: 16,
-                            ),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Text(
-                                book.price,
-                                style: const TextStyle(
-                                  color: Color(0xFFC3A15C),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.remove_circle_outline,
-                                  color: Color(0xFF8391A1),
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  context.read<HomeCubit>().updateCartQuantity(
-                                    book.id,
-                                    qty - 1,
-                                  );
-                                },
-                              ),
-                              Text(
-                                '$qty',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: Color(0xFF1E232C),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.add_circle_outline,
-                                  color: Color(0xFF8391A1),
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  context.read<HomeCubit>().updateCartQuantity(
-                                    book.id,
-                                    qty + 1,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.redAccent,
-                            ),
-                            onPressed: () {
-                              context.read<HomeCubit>().removeFromCart(book.id);
-                            },
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (newContext) => BlocProvider.value(
-                                  value: context.read<HomeCubit>(),
-                                  child: BookDetailsView(book: book),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Total Price:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+              itemBuilder: (context, index) {
+                final book = cartBooks[index];
+
+                return Card(
+                  child: ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+
+                      child: Image.network(
+                        book.imageUrl,
+
+                        width: 50,
+
+                        height: 70,
+
+                        fit: BoxFit.cover,
+
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 50,
+
+                            height: 70,
+
+                            color: const Color(0xFFE8ECF4),
+
+                            child: const Icon(
+                              Icons.broken_image_outlined,
+
                               color: Color(0xFF8391A1),
                             ),
-                          ),
-                          Text(
-                            formattedTotal,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E232C),
-                            ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2F2F2F),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () => _showCheckoutBottomSheet(context),
-                          child: const Text(
-                            'Checkout',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+
+                    title: Text(book.title),
+
+                    subtitle: Text(book.price),
                   ),
-                ),
-              ],
+                );
+              },
             );
           }
+
           return const Center(
             child: CircularProgressIndicator(color: Color(0xFFC3A15C)),
           );
@@ -688,8 +490,8 @@ class CartTab extends StatelessWidget {
     );
   }
 }
+// ================= Profile Tab =================
 
-// Profile Tab Content
 class ProfileTab extends StatelessWidget {
   final String userName;
   final String email;
@@ -700,6 +502,7 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8F9),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFFF7F8F9),
         elevation: 0,
@@ -712,84 +515,123 @@ class ProfileTab extends StatelessWidget {
           ),
         ),
       ),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
+
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+
             children: [
               const CircleAvatar(
                 radius: 50,
                 backgroundColor: Color(0xFFE8ECF4),
+
                 child: Icon(Icons.person, size: 60, color: Color(0xFFC3A15C)),
               ),
+
               const SizedBox(height: 20),
+
               Text(
                 userName,
+
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
+
                   color: Color(0xFF1E232C),
+
                   fontFamily: 'Georgia',
                 ),
+
                 textAlign: TextAlign.center,
               ),
+
               const SizedBox(height: 8),
+
               const Text(
                 'Signed in with Bookia API',
+
                 style: TextStyle(fontSize: 14, color: Color(0xFF6A707C)),
               ),
+
               const SizedBox(height: 30),
+
               Container(
                 width: double.infinity,
+
                 padding: const EdgeInsets.all(16),
+
                 decoration: BoxDecoration(
                   color: Colors.white,
+
                   borderRadius: BorderRadius.circular(12),
+
                   border: Border.all(color: const Color(0xFFE8ECF4)),
                 ),
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+
                   children: [
                     const Text(
                       'Email:',
+
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
+
                         color: Color(0xFF1E232C),
                       ),
                     ),
+
                     const SizedBox(height: 6),
+
                     SelectableText(
                       email,
+
                       style: TextStyle(
                         fontSize: 12,
+
                         color: Colors.grey[700],
+
                         fontFamily: 'Courier',
                       ),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 30),
+
               SizedBox(
                 width: double.infinity,
+
                 height: 52,
+
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF3B30),
+
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
+
                   onPressed: () {
                     context.read<AuthCubit>().logout();
                   },
+
                   icon: const Icon(Icons.logout, color: Colors.white),
+
                   label: const Text(
                     'Logout',
+
                     style: TextStyle(
                       color: Colors.white,
+
                       fontSize: 16,
+
                       fontWeight: FontWeight.bold,
                     ),
                   ),
